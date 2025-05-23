@@ -1,0 +1,14 @@
+{
+  "clothes": {
+    "title": "Clothes",
+    "icon": "/clothes/bow-2.png",
+    "route": "/clothes",
+    "iconAlt": "Clothes Icon"
+  },
+  "tattoos": {
+    "title": "Tattoos",
+    "icon": "/tattoos/tattoo.png",
+    "route": "/tattoos",
+    "iconAlt": "Tattoos Icon"
+  }
+}
