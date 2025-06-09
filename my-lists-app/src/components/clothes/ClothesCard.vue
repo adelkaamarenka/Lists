@@ -39,8 +39,8 @@ const addItem = async () => {
 
 const deleteItem = async (itemID) => {
   try {
-    await axios.delete(`/api/jf_list/${id}`);
-    console.log("Item deleted:", response.data);
+    await axios.delete(`/api/jf_list/${itemID}`);
+    console.log("Item deleted");
   } catch (error) {
     console.error("Error deleting item:", error);
   }
