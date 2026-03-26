@@ -21,10 +21,37 @@ function normalizeUrl(url) {
   return url;
 }
 
-// API: Get current list
-app.get("/api/jf_list", async (req, res) => {
+/* const getListHandler = (tableName) => async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM jf_items ORDER BY id DESC");
+    const result = await pool.query(
+      `SELECT * FROM ${tableName} ORDER BY id DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB read error" });
+  }
+};
+
+app.get("/api/jf_list", getListHandler("jf_items"));
+app.get("/api/others_list", getListHandler("others_items"));
+app.get("/api/justin_list", getListHandler("justin_items")); */
+
+const validTypes = {
+  jf: "jf_items",
+  others: "others_items",
+  justin: "justin_items",
+};
+
+app.get("/api/items", async (req, res) => {
+  const { type } = req.query;
+  const tableName = validTypes[type];
+  if (!tableName) return res.status(400).json({ error: "Invalid list type" });
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM ${tableName} ORDER BY id DESC`
+    );
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -33,13 +60,14 @@ app.get("/api/jf_list", async (req, res) => {
 });
 
 // API: Add item to list
-app.post("/api/jf_list", async (req, res) => {
-  const { name, url, comment, price } = req.body;
+app.post("/api/items", async (req, res) => {
+  const { list, name, url, comment, price } = req.body;
+  const tableName = validTypes[list];
 
   const normalizedUrl = normalizeUrl(url);
   try {
     const result = await pool.query(
-      "INSERT INTO jf_items (name, url, comment, price) VALUES ($1, $2, $3, $4) RETURNING *",
+      `INSERT INTO ${tableName} (name, url, comment, price) VALUES ($1, $2, $3, $4) RETURNING *`,
       [name.trim(), normalizedUrl.trim(), comment.trim(), price]
     );
     res.status(201).json(result.rows[0]);
@@ -50,8 +78,10 @@ app.post("/api/jf_list", async (req, res) => {
 });
 
 // API: Delete item by ID
-app.delete("/api/jf_list/:id", async (req, res) => {
+app.delete("/api/list/:id", async (req, res) => {
   const { id } = req.params;
+  const { type } = req.query;
+  const tableName = validTypes[type];
 
   // Validate ID
   const parsedId = parseInt(id, 10);
@@ -61,7 +91,7 @@ app.delete("/api/jf_list/:id", async (req, res) => {
 
   try {
     const result = await pool.query(
-      "DELETE FROM jf_items WHERE id = $1 RETURNING *",
+      `DELETE FROM ${tableName} WHERE id = $1 RETURNING *`,
       [parsedId]
     );
 

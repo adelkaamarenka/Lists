@@ -2,7 +2,7 @@
 import { defineProps, defineEmits, ref, computed } from "vue";
 import axios from "axios";
 
-const props = defineProps(["imgUrl", "listTitle", "itemsList"]);
+const props = defineProps(["imgUrl", "listTitle", "listName", "itemsList"]);
 const emit = defineEmits("updateList");
 
 const price = (price) => "$".repeat(Number(price));
@@ -18,7 +18,8 @@ const addItem = async () => {
   if (addingItem.value) {
     if (!isValid.value) return;
     try {
-      const response = await axios.post("/api/jf_list", {
+      const response = await axios.post("/api/items", {
+        list: props.listName,
         name: websiteName.value,
         url: websiteURL.value,
         comment: websiteComment.value,
@@ -39,7 +40,7 @@ const addItem = async () => {
 
 const deleteItem = async (itemID) => {
   try {
-    await axios.delete(`/api/jf_list/${itemID}`);
+    await axios.delete(`/api/list/${itemID}?type=${props.listName}`);
     console.log("Item deleted");
   } catch (error) {
     console.error("Error deleting item:", error);

@@ -3,49 +3,73 @@ import { computed, onMounted, ref } from "vue";
 import axios from "axios";
 import ClothesCard from "../components/clothes/ClothesCard.vue";
 
-const getLists = async () => {
-  const response = await axios.get("/api/jf_list");
-  console.log(response.data, Array.isArray(response.data));
-  jFashItems.value = Array.isArray(response.data)
-    ? response.data
-    : [
-        {
-          name: "Luisa Sciolli",
-          url: "https://luisasciolli.com/",
-          comment: "designer",
-          price: "3",
-        },
-        {
-          name: "Namedcollective",
-          url: "",
-          comment: "hoodies, streetwear, tshirts",
-          price: "1",
-        },
-      ];
+const placeholderList = [
+  {
+    name: "No data",
+    url: "",
+    comment: ":(",
+    price: "3",
+  },
+];
+
+const loading = ref({
+  jf: true,
+  others: true,
+  justin: true,
+});
+
+const error = ref({
+  jf: null,
+  others: null,
+  justin: null,
+});
+
+const fetchList = async (url, targetRef, type) => {
+  try {
+    const response = await axios.get(url);
+    targetRef.value = Array.isArray(response.data)
+      ? response.data
+      : placeholderList;
+  } catch (err) {
+    error.value[type] = err.message || "Error fetching data";
+    targetRef.value = placeholderList;
+  } finally {
+    loading.value[type] = false;
+  }
 };
 
-onMounted(async () => {
+const getLists = () => {
+  fetchList("/api/items?type=jf", jFashItems, "jf");
+  fetchList("/api/items?type=others", othersItems, "others");
+  fetchList("/api/items?type=justin", justinItems, "justin");
+};
+
+onMounted(() => {
   getLists();
 });
 
 const jFashItems = ref([]);
-const newItem = ref("");
+const othersItems = ref([]);
+const justinItems = ref([]);
 
 const shoppingLists = computed(() => [
   {
     imgUrl: "/clothes/lolita-dress.png",
-    listTitle: "J-Fashion",
+    listTitle: "J-Fashion & Dresses",
+    listName: "jf",
     itemsList: jFashItems.value,
   },
   {
     imgUrl: "/clothes/named.png",
     listTitle: "Others",
-    itemsList: [],
+    listName: "others",
+    itemsList: othersItems.value,
   },
   {
     imgUrl: "/clothes/justin_tshirt.png",
     listTitle: "Justin",
-    itemsList: [],
+    listName: "justin",
+    itemsList: justinItems.value,
   },
 ]);
 </script>
